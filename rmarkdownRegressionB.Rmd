@@ -1,0 +1,115 @@
+---
+title: "612GroupB"
+author: "Tatiana Macha"
+date: "10/6/2020"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(readr)
+clean_data <- read.csv("/Users/tatianalozano/Desktop/clean_data.csv")
+#View(clean_data)
+```
+* * *
+## Model Regression Problem:
+
+In fit model we are using log_price as dependent variable and independent variable, which could be bedrooms, bathrooms, sqft_living, ... 
+
+The regression formula is:
+\[
+y_houseprice = \beta_0 + \beta_1x + \beta_2c_2 + \beta_3c_3 + \beta..,
+\]
+
+For fit, our model tell that bedroom and bathrooms are not good model. 
+```{r}
+fit<-lm(log_price~bedrooms+bathrooms, data=clean_data)
+summary(fit)  #highly significant
+plot(log_price~bathrooms, clean_data)
+plot(log_price~bedrooms, clean_data)
+pred<-predict(fit, clean_data)
+head(pred)
+anova(fit) 
+fit$coefficients
+plot(fit, which = 1)
+plot(fit, which = 2)
+standardResidual<-rstandard(fit)
+hist(standardResidual)
+
+step(fit, direction = "backward")
+library(MASS)
+step.model<-stepAIC(fit, direction = "both", trace = FALSE)
+summary(step.model)
+
+
+```
+
+Here we did a model for each bedrooms and bathrooms.
+For fit$1$ and fit$2$ are also very low the r-squared. 
+
+
+```{r}
+fit1<-lm(log_price~bedrooms, data = clean_data)
+summary(fit1)
+fit2<-lm(log_price~bathrooms, data = clean_data)
+summary(fit2)
+```
+Now, adding more variables on fit$3$ and fit$4$ gives good r-squared which mean there is prediction and house price will be increasing. r-square=0.5568 for fina model.
+
+
+```{r}
+fit3<-lm(log_price~grade + bedrooms, data = clean_data)
+summary(fit3)
+```
+
+```{r}
+#multiple regression
+# the diffences from fit3 and fit4, we are using two variable and 5 variable. 
+fit4<-lm(log_price~bedrooms+bathrooms+sqft_living+sqft_lot+grade,  data = clean_data)  # these variable are higly significant. best one
+final.model<-stepAIC(fit4, direction = "both", trace = FALSE)
+summary(final.model)
+pred<-predict(fit4, clean_data)
+head(pred)
+anova(fit4) 
+ plot(final.model, which = 1)
+plot(final.model, which = 2)
+standardResidual4<-rstandard(fit)
+hist(standardResidual4)
+
+#Regression Marginal effect
+coef(final.model)
+
+#confidence interval 
+x <- confint(fit4,level=0.50)
+x
+
+#MSE
+
+sum(final.model$residuals^2)
+
+mean(final.model$residuals^2)
+```
+
+
+
+In this final model we are using log_price as dependent variable and bathroom, bedroom, sqft_living, sqft_lot, and grade are our independent varaible. 
+Formula:
+\[
+y\_houseprice = \beta_0 + \beta_1x + \beta_2c_2 + \beta_3c_3 + \beta..,
+\]
+The regression equation from summary of regression model:
+\[
+y\_houseprice= 1.124e+01+ -2.252e-02(bedrooms)+ -1.295e-02(bathrooms)+2.426e-04(sqft\_living)+ -2.175e-07(sqft\_lot)+1.837e-01(grade) 
+\]
+
+Our final model have good r-squared, see above on our summary on finalmodel/fit4. All variable in the final model is statistically significant. 
+The adjust R-squared of our final model is 0.5567. Therefore, 55% of the variablity in price can be explained by grade high or low, and the number of the sqft_living. 
+As the p-value is much less that 0.05, there is a significan relationship between the variables in the linear regression of the data set. 
+
+* * *
